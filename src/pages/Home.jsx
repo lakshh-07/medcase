@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import supabase from '../lib/supabase'
 import Sidebar from '../components/Sidebar'
 import StatCard from '../components/StatCard'
 import RecoveryChart from '../components/RecoveryChart'
+import HospitalCostChart from '../components/HospitalCostChart'
+import OutcomePieChart from '../components/OutcomePieChart'
 
 export default function Home() {
   const [allCases, setAllCases] = useState([])
@@ -130,16 +132,14 @@ export default function Home() {
 
         {/* Chart + Recent */}
         <div className="grid grid-cols-3 gap-5">
-          <div className="col-span-2">
+          <div className="col-span-2 space-y-5">
             <RecoveryChart selectedDisease={selectedDisease} />
+            <HospitalCostChart selectedDisease={selectedDisease} />
           </div>
 
           {/* Recent Cases */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <h3 className="font-semibold text-gray-900 mb-1">Recent Cases</h3>
-            <p className="text-xs text-gray-400 mb-4">
-              {selectedDisease === 'All' ? 'All diseases' : selectedDisease}
-            </p>
+            <h3 className="font-semibold text-gray-900 mb-4">Recent Cases</h3>
             <div className="space-y-3">
               {recent.map((c) => (
                 <div key={c.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
@@ -152,7 +152,7 @@ export default function Home() {
                   </span>
                 </div>
               ))}
-              {recent.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No cases found</p>}
+              {recent.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No cases yet</p>}
             </div>
             <button onClick={() => window.location.href = '/results'} className="w-full mt-4 text-xs text-accent font-medium hover:underline">
               View all cases →
