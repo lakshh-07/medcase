@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabase'
 import Sidebar from '../components/Sidebar'
 import StatCard from '../components/StatCard'
 import RecoveryChart from '../components/RecoveryChart'
+import HospitalCostChart from '../components/HospitalCostChart'
+import OutcomePieChart from '../components/OutcomePieChart'
 
 export default function Home() {
   const [allCases, setAllCases] = useState([])
@@ -145,30 +147,35 @@ export default function Home() {
 
         {/* Chart + Recent */}
         <div className="grid grid-cols-3 gap-5">
-          <div className="col-span-2">
+          <div className="col-span-2 space-y-5">
             <RecoveryChart selectedDisease={selectedDisease} />
+            <HospitalCostChart selectedDisease={selectedDisease} />
           </div>
 
-          {/* Recent Cases */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <h3 className="font-semibold text-gray-900 mb-4">Recent Cases</h3>
-            <div className="space-y-3">
-              {recent.map((c) => (
-                <div key={c.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{c.disease}</p>
-                    <p className="text-xs text-gray-400">{c.age ? `Age ${c.age}` : '—'} · {c.hospital_name}</p>
+          <div className="space-y-5">
+            {/* Outcome Pie Chart - above cases */}
+            <OutcomePieChart selectedDisease={selectedDisease} />
+            {/* Recent Cases */}
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <h3 className="font-semibold text-gray-900 mb-4">Recent Cases</h3>
+              <div className="space-y-3">
+                {recent.map((c) => (
+                  <div key={c.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{c.disease}</p>
+                      <p className="text-xs text-gray-400">{c.age ? `Age ${c.age}` : '—'} · {c.hospital_name}</p>
+                    </div>
+                    <span className={`text-xs font-semibold ${outcomeColor[c.outcome] || 'text-gray-400'}`}>
+                      {c.outcome ?? '—'}
+                    </span>
                   </div>
-                  <span className={`text-xs font-semibold ${outcomeColor[c.outcome] || 'text-gray-400'}`}>
-                    {c.outcome ?? '—'}
-                  </span>
-                </div>
-              ))}
-              {recent.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No cases yet</p>}
+                ))}
+                {recent.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No cases yet</p>}
+              </div>
+              <button onClick={() => window.location.href = '/results'} className="w-full mt-4 text-xs text-accent font-medium hover:underline">
+                View all cases →
+              </button>
             </div>
-            <button onClick={() => window.location.href = '/results'} className="w-full mt-4 text-xs text-accent font-medium hover:underline">
-              View all cases →
-            </button>
           </div>
         </div>
 
