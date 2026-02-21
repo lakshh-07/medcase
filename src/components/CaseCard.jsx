@@ -1,6 +1,6 @@
 const outcomeStyles = {
     Recovered: 'bg-green-50 text-green-600',
-    Improving: 'bg-blue-50 text-blue-600',
+    Improved: 'bg-blue-50 text-blue-600',
     Stable: 'bg-amber-50 text-amber-600',
     Deteriorating: 'bg-rose-50 text-rose-600',
   }

@@ -1,37 +1,47 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Sidebar from '../components/Sidebar'
 import StatCard from '../components/StatCard'
 import RecoveryChart from '../components/RecoveryChart'
 
 export default function Home() {
-  const navigate = useNavigate()
+  const [allCases, setAllCases] = useState([])
   const [stats, setStats] = useState({ total: 0, recovered: 0, diseases: 0, hospitals: 0 })
   const [recent, setRecent] = useState([])
+  const [selectedDisease, setSelectedDisease] = useState('All')
   const [search, setSearch] = useState('')
 
   useEffect(() => {
-    async function fetchStats() {
+    async function fetchAll() {
       const { data } = await supabase.from('cases').select('*')
       if (!data) return
-      const recovered = data.filter(c => c.outcome === 'Recovered').length
-      const diseases = [...new Set(data.map(c => c.disease))].length
-      const hospitals = [...new Set(data.map(c => c.hospital_name))].length
-      setStats({ total: data.length, recovered, diseases, hospitals })
+      setAllCases(data)
       setRecent(data.slice(-5).reverse())
+      updateStats(data, 'All')
     }
-    fetchStats()
+    fetchAll()
   }, [])
+
+  const updateStats = (data, disease) => {
+    const filtered = disease === 'All' ? data : data.filter(c =>
+      c.disease?.toLowerCase().includes(disease.toLowerCase())
+    )
+    const recovered = filtered.filter(c => c.outcome === 'Recovered' || c.outcome === 'Improved').length
+    const uniqueDiseases = [...new Set(filtered.map(c => c.disease).filter(Boolean))].length
+    const uniqueHospitals = [...new Set(filtered.map(c => c.hospital_name).filter(Boolean))].length
+    setStats({ total: filtered.length, recovered, diseases: uniqueDiseases, hospitals: uniqueHospitals })
+  }
 
   const handleSearch = (e) => {
     e.preventDefault()
-    navigate(`/results?disease=${search}`)
+    const val = search.trim() === '' ? 'All' : search.trim()
+    setSelectedDisease(val)
+    updateStats(allCases, val)
   }
 
   const outcomeColor = {
     Recovered: 'text-green-500',
-    Improving: 'text-blue-500',
+    Improved: 'text-blue-500',
     Stable: 'text-amber-500',
     Deteriorating: 'text-rose-500',
   }
@@ -47,11 +57,9 @@ export default function Home() {
             <p className="text-xs text-gray-400 mb-1">Pages / Dashboard</p>
             <h1 className="text-2xl font-bold text-gray-900">Overview</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-400 bg-white border border-gray-100 px-3 py-2 rounded-lg shadow-sm">
-              📅 {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-            </span>
-          </div>
+          <span className="text-xs text-gray-400 bg-white border border-gray-100 px-3 py-2 rounded-lg shadow-sm">
+            📅 {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+          </span>
         </div>
 
         {/* Banner */}
@@ -62,7 +70,7 @@ export default function Home() {
             <p className="text-white/70 text-sm mt-1">Browse real treatment journeys — no names, no IDs, just outcomes.</p>
           </div>
           <button
-            onClick={() => navigate('/results')}
+            onClick={() => window.location.href = '/results'}
             className="bg-white text-accent font-semibold text-sm px-5 py-2.5 rounded-xl hover:shadow-lg transition-all whitespace-nowrap"
           >
             Browse Cases →
@@ -76,7 +84,13 @@ export default function Home() {
               type="text"
               placeholder="Search by disease e.g. Diabetes, Asthma..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => {
+                setSearch(e.target.value)
+                if (e.target.value === '') {
+                  setSelectedDisease('All')
+                  updateStats(allCases, 'All')
+                }
+              }}
               className="flex-1 bg-white border border-gray-100 rounded-xl px-5 py-3 text-sm shadow-sm focus:outline-none focus:border-accent"
             />
             <button
@@ -85,21 +99,54 @@ export default function Home() {
             >
               Search
             </button>
+            {selectedDisease !== 'All' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('')
+                  setSelectedDisease('All')
+                  updateStats(allCases, 'All')
+                }}
+                className="px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-400 hover:text-gray-600 transition-all"
+              >
+                ✕ Clear
+              </button>
+            )}
           </div>
         </form>
 
         {/* Stat Cards */}
         <div className="grid grid-cols-4 gap-5 mb-8">
-          <StatCard title="Total Cases" value={stats.total.toLocaleString()} sub="In the database" icon="🗂" color="indigo" />
-          <StatCard title="Recovered" value={stats.recovered.toLocaleString()} sub="Reported full recovery" icon="✅" color="green" />
-          <StatCard title="Diseases" value={stats.diseases} sub="Unique conditions" icon="🧬" color="amber" />
-          <StatCard title="Hospitals" value={stats.hospitals} sub="Contributing institutions" icon="🏥" color="rose" />
+          <StatCard
+            title={selectedDisease === 'All' ? 'Total Cases' : `${selectedDisease} Cases`}
+            value={stats.total.toLocaleString()}
+            sub={selectedDisease === 'All' ? 'In the database' : 'Matching your search'}
+            icon="🗂" color="indigo"
+          />
+          <StatCard
+            title="Recovered"
+            value={stats.recovered.toLocaleString()}
+            sub="Reported full recovery"
+            icon="✅" color="green"
+          />
+          <StatCard
+            title="Diseases"
+            value={stats.diseases}
+            sub="Unique conditions"
+            icon="🧬" color="amber"
+          />
+          <StatCard
+            title="Hospitals"
+            value={stats.hospitals}
+            sub="Contributing institutions"
+            icon="🏥" color="rose"
+          />
         </div>
 
         {/* Chart + Recent */}
         <div className="grid grid-cols-3 gap-5">
           <div className="col-span-2">
-            <RecoveryChart />
+            <RecoveryChart selectedDisease={selectedDisease} />
           </div>
 
           {/* Recent Cases */}
@@ -119,10 +166,7 @@ export default function Home() {
               ))}
               {recent.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No cases yet</p>}
             </div>
-            <button
-              onClick={() => navigate('/results')}
-              className="w-full mt-4 text-xs text-accent font-medium hover:underline"
-            >
+            <button onClick={() => window.location.href = '/results'} className="w-full mt-4 text-xs text-accent font-medium hover:underline">
               View all cases →
             </button>
           </div>
