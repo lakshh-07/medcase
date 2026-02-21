@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import supabase from '../lib/supabase'
 import Sidebar from '../components/Sidebar'
 import StatCard from '../components/StatCard'
 import RecoveryChart from '../components/RecoveryChart'

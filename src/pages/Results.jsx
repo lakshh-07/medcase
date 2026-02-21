@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import supabase from '../lib/supabase'
 import Sidebar from '../components/Sidebar'
 import FilterPanel from '../components/FilterPanel'
 import CaseCard from '../components/CaseCard'
