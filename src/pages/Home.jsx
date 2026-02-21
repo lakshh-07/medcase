@@ -62,19 +62,57 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Banner */}
-        <div className="rounded-2xl bg-gradient-to-r from-accent to-accent2 p-6 mb-8 flex items-center justify-between">
-          <div>
-            <p className="text-white/80 text-sm font-medium mb-1">✦ Real anonymized patient data</p>
-            <p className="text-white text-xl font-bold">Make informed decisions after your diagnosis.</p>
-            <p className="text-white/70 text-sm mt-1">Browse real treatment journeys — no names, no IDs, just outcomes.</p>
+        {/* Banner with hero image */}
+        <div className="rounded-2xl bg-gradient-to-r from-accent to-accent2 p-6 mb-8 flex items-center justify-between overflow-hidden relative">
+          <div className="relative z-10 flex items-center justify-between w-full gap-8">
+            <div>
+              <p className="text-white/80 text-sm font-medium mb-1">✦ Real anonymized patient data</p>
+              <p className="text-white text-xl font-bold">Make informed decisions after your diagnosis.</p>
+              <p className="text-white/70 text-sm mt-1">Browse real treatment journeys — no names, no IDs, just outcomes.</p>
+            </div>
+            <div className="hidden lg:flex items-center gap-6 shrink-0">
+              <div className="relative w-44 h-32 rounded-xl overflow-hidden shadow-xl border-2 border-white/20">
+                <img
+                  src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=352&h=256&fit=crop"
+                  alt="Healthcare professional"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="relative w-36 h-28 rounded-xl overflow-hidden shadow-xl border-2 border-white/20">
+                <img
+                  src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=288&h=224&fit=crop"
+                  alt="Medical data"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+            <button
+              onClick={() => window.location.href = '/results'}
+              className="bg-white text-accent font-semibold text-sm px-5 py-2.5 rounded-xl hover:shadow-lg transition-all whitespace-nowrap shrink-0"
+            >
+              Browse Cases →
+            </button>
           </div>
-          <button
-            onClick={() => window.location.href = '/results'}
-            className="bg-white text-accent font-semibold text-sm px-5 py-2.5 rounded-xl hover:shadow-lg transition-all whitespace-nowrap"
-          >
-            Browse Cases →
-          </button>
+        </div>
+
+        {/* Visual feature strip */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          {[
+            { img: 'https://images.unsplash.com/photo-1551076805-e1869033e561?w=400&h=200&fit=crop', label: 'Real outcomes', sub: 'From verified cases' },
+            { img: 'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=400&h=200&fit=crop', label: 'Privacy first', sub: '100% anonymized' },
+            { img: 'https://images.unsplash.com/photo-1579154204200-7d1f28b9f0b6?w=400&h=200&fit=crop', label: 'Informed decisions', sub: 'Evidence-based' },
+          ].map(({ img, label, sub }) => (
+            <div key={label} className="group rounded-xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="relative aspect-[2/1] overflow-hidden">
+                <img src={img} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              </div>
+              <div className="p-3">
+                <p className="font-semibold text-gray-900 text-sm">{label}</p>
+                <p className="text-xs text-gray-500">{sub}</p>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Search */}
