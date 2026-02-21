@@ -12,19 +12,27 @@ export default function Home() {
   const [recent, setRecent] = useState([])
   const [selectedDisease, setSelectedDisease] = useState('All')
   const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     async function fetchAll() {
-      const { data } = await supabase.from('cases').select('*')
-      if (!data) return
-      setAllCases(data)
-      setRecent(data.slice(-5).reverse())
-      updateStats(data, 'All')
+      setLoading(true)
+      setError(null)
+      const { data, error: err } = await supabase.from('cases').select('*')
+      setLoading(false)
+      if (err) {
+        setError(err.message || 'Failed to load cases. Check your Supabase URL and key in .env.')
+        return
+      }
+      const list = data ?? []
+      setAllCases(list)
+      applyFilter(list, 'All')
     }
     fetchAll()
   }, [])
 
-  const updateStats = (data, disease) => {
+  const applyFilter = (data, disease) => {
     const filtered = disease === 'All' ? data : data.filter(c =>
       c.disease?.toLowerCase().includes(disease.toLowerCase())
     )
@@ -32,13 +40,14 @@ export default function Home() {
     const uniqueDiseases = [...new Set(filtered.map(c => c.disease).filter(Boolean))].length
     const uniqueHospitals = [...new Set(filtered.map(c => c.hospital_name).filter(Boolean))].length
     setStats({ total: filtered.length, recovered, diseases: uniqueDiseases, hospitals: uniqueHospitals })
+    setRecent(filtered.slice(-5).reverse())
   }
 
   const handleSearch = (e) => {
     e.preventDefault()
     const val = search.trim() === '' ? 'All' : search.trim()
     setSelectedDisease(val)
-    updateStats(allCases, val)
+    applyFilter(allCases, val)
   }
 
   const outcomeColor = {
@@ -53,6 +62,23 @@ export default function Home() {
       <Sidebar />
       <main className="ml-[230px] flex-1 p-8">
 
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin mb-4" />
+            <p className="text-gray-500 text-sm">Loading dashboard…</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="rounded-2xl bg-rose-50 border border-rose-200 p-6 mb-8">
+            <p className="font-semibold text-rose-800">Could not load data</p>
+            <p className="text-sm text-rose-600 mt-1">{error}</p>
+            <p className="text-xs text-rose-500 mt-2">Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to a <code className="bg-rose-100 px-1 rounded">.env</code> file in the project root (see .env.example).</p>
+          </div>
+        )}
+
+        {!loading && !error && (
+        <>
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -90,7 +116,7 @@ export default function Home() {
                 setSearch(e.target.value)
                 if (e.target.value === '') {
                   setSelectedDisease('All')
-                  updateStats(allCases, 'All')
+                  applyFilter(allCases, 'All')
                 }
               }}
               className="flex-1 bg-white border border-gray-100 rounded-xl px-5 py-3 text-sm shadow-sm focus:outline-none focus:border-accent"
@@ -107,7 +133,7 @@ export default function Home() {
                 onClick={() => {
                   setSearch('')
                   setSelectedDisease('All')
-                  updateStats(allCases, 'All')
+                  applyFilter(allCases, 'All')
                 }}
                 className="px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-400 hover:text-gray-600 transition-all"
               >
@@ -125,24 +151,9 @@ export default function Home() {
             sub={selectedDisease === 'All' ? 'In the database' : 'Matching your search'}
             icon="🗂" color="indigo"
           />
-          <StatCard
-            title="Recovered"
-            value={stats.recovered.toLocaleString()}
-            sub="Reported full recovery"
-            icon="✅" color="green"
-          />
-          <StatCard
-            title="Diseases"
-            value={stats.diseases}
-            sub="Unique conditions"
-            icon="🧬" color="amber"
-          />
-          <StatCard
-            title="Hospitals"
-            value={stats.hospitals}
-            sub="Contributing institutions"
-            icon="🏥" color="rose"
-          />
+          <StatCard title="Recovered" value={stats.recovered.toLocaleString()} sub="Reported full recovery" icon="✅" color="green" />
+          <StatCard title="Diseases" value={stats.diseases} sub="Unique conditions" icon="🧬" color="amber" />
+          <StatCard title="Hospitals" value={stats.hospitals} sub="Contributing institutions" icon="🏥" color="rose" />
         </div>
 
         {/* Chart + Recent */}
@@ -157,7 +168,10 @@ export default function Home() {
             <OutcomePieChart selectedDisease={selectedDisease} />
             {/* Recent Cases */}
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-4">Recent Cases</h3>
+              <h3 className="font-semibold text-gray-900 mb-1">Recent Cases</h3>
+              <p className="text-xs text-gray-400 mb-4">
+                {selectedDisease === 'All' ? 'All diseases' : selectedDisease}
+              </p>
               <div className="space-y-3">
                 {recent.map((c) => (
                   <div key={c.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
@@ -178,6 +192,8 @@ export default function Home() {
             </div>
           </div>
         </div>
+        </>
+        )}
 
       </main>
     </div>
