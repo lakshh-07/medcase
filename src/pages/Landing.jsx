@@ -97,7 +97,7 @@ export default function Landing() {
                 <span className="text-4xl font-bold text-gray-100 absolute top-4 right-5">{step}</span>
                 <div className="w-12 h-12 bg-accent-light rounded-xl flex items-center justify-center text-2xl mb-4">{icon}</div>
                 <h3 className="font-semibold text-gray-800 mb-2">{title}</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">{desc}</p>
+                <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -120,7 +120,7 @@ export default function Landing() {
                 <div className="w-12 h-12 bg-accent-light rounded-xl flex items-center justify-center text-2xl shrink-0">{icon}</div>
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">{title}</h3>
-                  <p className="text-sm text-gray-400 leading-relaxed">{desc}</p>
+                  <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
                 </div>
               </div>
             ))}
@@ -133,10 +133,10 @@ export default function Landing() {
         <div className="max-w-3xl mx-auto text-center">
           <div className="w-16 h-16 bg-accent-light rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">🔒</div>
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Privacy first, always</h2>
-          <p className="text-gray-400 leading-relaxed mb-8">
+          <p className="text-gray-500 leading-relaxed mb-8">
             MedCase never stores names, phone numbers, or any identifying information. Every case is reviewed before publishing. Our database contains only what matters — the clinical journey.
           </p>
-          <div className="flex items-center justify-center gap-6">
+          <div className="flex flex-wrap justify-center gap-3">
             {['No personal data', 'Hospital verified', 'Publicly accessible', 'Open data'].map(tag => (
               <span key={tag} className="text-xs font-medium bg-accent-light text-accent px-4 py-2 rounded-full">{tag}</span>
             ))}
@@ -148,7 +148,7 @@ export default function Landing() {
       <section className="py-20 px-12">
         <div className="max-w-4xl mx-auto bg-gradient-to-r from-accent to-accent2 rounded-3xl p-12 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Ready to make an informed decision?</h2>
-          <p className="text-white/70 mb-8">Browse real patient cases — free, anonymous, and always up to date.</p>
+          <p className="text-white/80 mb-8">Browse real patient cases — free, anonymous, and always up to date.</p>
           <button
             onClick={() => navigate('/dashboard')}
             className="bg-white text-accent font-bold px-8 py-4 rounded-2xl text-base hover:shadow-xl transition-all"
@@ -166,10 +166,10 @@ export default function Landing() {
           </div>
           <span className="font-semibold text-gray-700 text-sm">MedCase</span>
         </div>
-        <p className="text-xs text-gray-400">© 2026 MedCase. All patient data is fully anonymized.</p>
+        <p className="text-xs text-gray-500">© 2026 MedCase. All patient data is fully anonymized.</p>
         <div className="flex gap-4">
-          <a href="#" className="text-xs text-gray-400 hover:text-gray-600">Privacy Policy</a>
-          <a href="#" className="text-xs text-gray-400 hover:text-gray-600">Contact</a>
+          <a href="#" className="text-xs text-gray-500 hover:text-gray-700">Privacy Policy</a>
+          <a href="#" className="text-xs text-gray-500 hover:text-gray-700">Contact</a>
         </div>
       </footer>
 

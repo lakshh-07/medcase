@@ -12,13 +12,22 @@ export default function Home() {
   const [recent, setRecent] = useState([])
   const [selectedDisease, setSelectedDisease] = useState('All')
   const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     async function fetchAll() {
-      const { data } = await supabase.from('cases').select('*')
-      if (!data) return
-      setAllCases(data)
-      applyFilter(data, 'All')
+      setLoading(true)
+      setError(null)
+      const { data, error: err } = await supabase.from('cases').select('*')
+      setLoading(false)
+      if (err) {
+        setError(err.message || 'Failed to load cases. Check your Supabase URL and key in .env.')
+        return
+      }
+      const list = data ?? []
+      setAllCases(list)
+      applyFilter(list, 'All')
     }
     fetchAll()
   }, [])
@@ -53,6 +62,23 @@ export default function Home() {
       <Sidebar />
       <main className="ml-[230px] flex-1 p-8">
 
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin mb-4" />
+            <p className="text-gray-500 text-sm">Loading dashboard…</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="rounded-2xl bg-rose-50 border border-rose-200 p-6 mb-8">
+            <p className="font-semibold text-rose-800">Could not load data</p>
+            <p className="text-sm text-rose-600 mt-1">{error}</p>
+            <p className="text-xs text-rose-500 mt-2">Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to a <code className="bg-rose-100 px-1 rounded">.env</code> file in the project root (see .env.example).</p>
+          </div>
+        )}
+
+        {!loading && !error && (
+        <>
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -137,28 +163,37 @@ export default function Home() {
             <HospitalCostChart selectedDisease={selectedDisease} />
           </div>
 
-          {/* Recent Cases */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <h3 className="font-semibold text-gray-900 mb-4">Recent Cases</h3>
-            <div className="space-y-3">
-              {recent.map((c) => (
-                <div key={c.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{c.disease}</p>
-                    <p className="text-xs text-gray-400">{c.age ? `Age ${c.age}` : '—'} · {c.hospital_name}</p>
+          <div className="space-y-5">
+            {/* Outcome Pie Chart - above cases */}
+            <OutcomePieChart selectedDisease={selectedDisease} />
+            {/* Recent Cases */}
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <h3 className="font-semibold text-gray-900 mb-1">Recent Cases</h3>
+              <p className="text-xs text-gray-400 mb-4">
+                {selectedDisease === 'All' ? 'All diseases' : selectedDisease}
+              </p>
+              <div className="space-y-3">
+                {recent.map((c) => (
+                  <div key={c.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{c.disease}</p>
+                      <p className="text-xs text-gray-400">{c.age ? `Age ${c.age}` : '—'} · {c.hospital_name}</p>
+                    </div>
+                    <span className={`text-xs font-semibold ${outcomeColor[c.outcome] || 'text-gray-400'}`}>
+                      {c.outcome ?? '—'}
+                    </span>
                   </div>
-                  <span className={`text-xs font-semibold ${outcomeColor[c.outcome] || 'text-gray-400'}`}>
-                    {c.outcome ?? '—'}
-                  </span>
-                </div>
-              ))}
-              {recent.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No cases yet</p>}
+                ))}
+                {recent.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No cases yet</p>}
+              </div>
+              <button onClick={() => window.location.href = '/results'} className="w-full mt-4 text-xs text-accent font-medium hover:underline">
+                View all cases →
+              </button>
             </div>
-            <button onClick={() => window.location.href = '/results'} className="w-full mt-4 text-xs text-accent font-medium hover:underline">
-              View all cases →
-            </button>
           </div>
         </div>
+        </>
+        )}
 
       </main>
     </div>
